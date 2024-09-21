@@ -11,6 +11,7 @@ class CustomLLaMAModel(nn.Module):
     def __init__(self, pretrained_llama, embed_size):
         super(CustomLLaMAModel, self).__init__()
         self.llama = pretrained_llama
+        
         class CustomEmbeddingLayer(nn.Module):
             def __init__(self, vocab_size, embed_size):
                 super(CustomEmbeddingLayer, self).__init__()
@@ -18,6 +19,7 @@ class CustomLLaMAModel(nn.Module):
 
             def forward(self, input_ids):
                 return self.embeddings(input_ids)
+        
         custom_embedding_layer = CustomEmbeddingLayer(vocab_size=vocab_size, embed_size=embed_size)
         self.llama.transformer.wte = custom_embedding_layer
 

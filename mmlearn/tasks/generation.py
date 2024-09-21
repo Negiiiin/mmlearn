@@ -187,35 +187,7 @@ class Generation(L.LightningModule):
                 * loss_pair.weight
             )
 
-        auxiliary_losses: list[torch.Tensor] = []
-        if self.auxiliary_tasks:
-            for task_name, task_spec in self.aux_task_specs.items():
-                auxiliary_task_output = self.auxiliary_tasks[task_name].training_step(
-                    batch, batch_idx
-                )
-                if isinstance(auxiliary_task_output, torch.Tensor):
-                    auxiliary_task_loss = auxiliary_task_output
-                elif isinstance(auxiliary_task_output, Mapping):
-                    auxiliary_task_loss = auxiliary_task_output["loss"]
-                else:
-                    raise ValueError(
-                        "Expected auxiliary task output to be a tensor or a mapping "
-                        f"containing a 'loss' key, but got {type(auxiliary_task_output)}."
-                    )
-
-                auxiliary_losses.append(task_spec.loss_weight * auxiliary_task_loss)
-                if self.log_auxiliary_tasks_loss:
-                    self.log(
-                        f"train/{task_name}_loss",
-                        auxiliary_task_loss
-                        if not self.fabric
-                        else self.all_gather(
-                            auxiliary_task_loss.clone().detach()
-                        ).mean(),
-                        sync_dist=True,
-                    )
-
-        return torch.stack(contrastive_losses + auxiliary_losses).sum()
+        return torch.stack(contrastive_losses).sum()
     
     
     
